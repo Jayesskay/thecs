@@ -1,6 +1,6 @@
 use std::{alloc::Layout, any::TypeId};
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub struct TypeInfo {
     pub(crate) id: TypeId,
     pub(crate) layout: Layout,
