@@ -24,4 +24,9 @@ impl TypeInfo {
             },
         }
     }
+
+    #[must_use]
+    pub fn size(&self) -> usize {
+        self.layout.size()
+    }
 }

@@ -3,13 +3,18 @@
 #![allow(clippy::module_name_repetitions)]
 
 pub mod prelude {
-    pub use crate::{actor::Actor, component::Component, scene::Scene};
+    pub use crate::{
+        actor::Actor,
+        component::{Component, ComponentSource},
+        resource::Resource,
+        scene::Scene,
+    };
+
     pub use macros::Component;
 }
 
 mod actor;
 mod archetype;
-mod batch;
 mod component;
 mod resource;
 mod scene;
@@ -17,7 +22,11 @@ mod system;
 mod type_info;
 
 pub use actor::Actor;
-pub use batch::Batch;
-pub use component::Component;
+pub use component::{Component, ComponentSource};
 pub use macros::Component;
+pub use resource::Resource;
 pub use scene::Scene;
+
+use actor::ActorFactory;
+use archetype::Archetype;
+use type_info::TypeInfo;

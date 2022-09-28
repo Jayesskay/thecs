@@ -1,6 +1,4 @@
-use crate::{
-    actor, archetype::Archetype, resource::Resource, type_info::TypeInfo, Actor, Batch, Component,
-};
+use crate::{Actor, ActorFactory, Archetype, Component, ComponentSource, Resource, TypeInfo};
 
 use std::{
     any::{Any, TypeId},
@@ -9,7 +7,7 @@ use std::{
 
 #[derive(Default)]
 pub struct Scene {
-    actor_factory: actor::ActorFactory,
+    actor_factory: ActorFactory,
     archetypes: Vec<Archetype>,
     resources: HashMap<TypeId, Box<dyn Any>>,
 }
@@ -30,19 +28,24 @@ impl Scene {
     }
 
     #[allow(clippy::single_match_else)]
-    pub fn create_actor(&mut self, batch: impl Batch) -> Actor {
+    pub fn create_actor(&mut self, src: impl ComponentSource) -> Actor {
         let actor = self.actor_factory.create();
-        let types = batch.types();
-        let archetype = match self.get_archetype_mut_with_types(&types) {
+        let types = src.types();
+        let type_infos = types.iter().map(|(type_info, _)| type_info);
+        let archetype = match self.get_archetype_mut_with_types(type_infos) {
             Some(archetype) => archetype,
             None => {
-                self.archetypes
-                    .push(Archetype::new(Scene::DEFAULT_ARCHETYPE_CAPACITY, &types));
+                let type_infos = types.iter().map(|(type_info, _)| type_info);
+                let archetype =
+                    Archetype::new(Scene::DEFAULT_ARCHETYPE_CAPACITY, type_infos);
+
+                self.archetypes.push(archetype);
                 self.archetypes.last_mut().unwrap()
             }
         };
 
-        archetype.create_actor(actor, batch, &types);
+        archetype.create_actor(actor, types.iter());
+        std::mem::forget(src);
         actor
     }
 
@@ -67,10 +70,13 @@ impl Scene {
     }
 
     #[must_use]
-    fn get_archetype_mut_with_types(&mut self, types: &[TypeInfo]) -> Option<&mut Archetype> {
+    fn get_archetype_mut_with_types<'a, Iter>(&mut self, mut types: Iter) -> Option<&mut Archetype>
+    where
+        Iter: Iterator<Item = &'a TypeInfo>,
+    {
         self.archetypes
             .iter_mut()
-            .find(|archetype| archetype.has_types(types))
+            .find(|a| types.all(|ty| a.has_type(*ty)))
     }
 
     #[must_use]

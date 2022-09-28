@@ -1,4 +1,4 @@
-use crate::{type_info::TypeInfo, Actor, Batch, Component};
+use crate::{Actor, Component, TypeInfo};
 
 use std::{
     alloc::{alloc, dealloc, Layout},
@@ -33,20 +33,22 @@ impl Archetype {
             .add(entry.offset + entry.element_size() * index)
     }
 
-    pub fn create_actor(&mut self, actor: Actor, batch: impl Batch, types: &[TypeInfo]) {
+    pub fn create_actor<'a, Iter>(&mut self, actor: Actor, types: Iter)
+    where
+        Iter: Iterator<Item = &'a (TypeInfo, *const u8)>,
+    {
         let index = self.register_actor(actor);
-        for ty in types.iter() {
-            let component_data = batch.data(ty.id);
+        for ty in types {
+            let type_info = ty.0;
+            let component_data = ty.1;
             unsafe {
                 std::ptr::copy_nonoverlapping(
                     component_data,
-                    self.component_ptr_from_id(ty.id, index),
-                    ty.layout.size(),
+                    self.component_ptr_from_id(type_info.id, index),
+                    type_info.size(),
                 );
             }
         }
-
-        std::mem::forget(batch);
     }
 
     pub fn destroy_actor(&mut self, actor: Actor) {
@@ -104,26 +106,6 @@ impl Archetype {
     }
 
     #[must_use]
-    pub fn has_types(&self, types: &[TypeInfo]) -> bool {
-        if self.entries.len() != types.len() {
-            return false;
-        }
-
-        for ty in types.iter() {
-            if !self.has_type(*ty) {
-                return false;
-            }
-        }
-
-        true
-    }
-
-    #[must_use]
-    fn layout(capacity: usize, types: &[TypeInfo]) -> (Layout, Vec<Entry>) {
-        Self::layout_from_iter(capacity, types.iter())
-    }
-
-    #[must_use]
     fn layout_from_iter<'a, Iter>(capacity: usize, types: Iter) -> (Layout, Vec<Entry>)
     where
         Iter: Iterator<Item = &'a TypeInfo>,
@@ -145,8 +127,11 @@ impl Archetype {
     }
 
     #[must_use]
-    pub fn new(capacity: usize, types: &[TypeInfo]) -> Self {
-        let (memory_layout, entries) = Archetype::layout(capacity, types);
+    pub fn new<'a, Iter>(capacity: usize, types: Iter) -> Self
+    where
+        Iter: Iterator<Item = &'a TypeInfo>,
+    {
+        let (memory_layout, entries) = Archetype::layout_from_iter(capacity, types);
         Self {
             actors: HashMap::new(),
             capacity,
