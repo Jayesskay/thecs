@@ -3,10 +3,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 pub mod prelude {
-    pub use crate::{
-        actor::Actor, component::Component, scene::Scene, schedule::Schedule, stage::Stage,
-    };
-
+    pub use crate::{actor::Actor, component::Component, scene::Scene};
     pub use macros::Component;
 }
 
@@ -16,8 +13,6 @@ mod batch;
 mod component;
 mod resource;
 mod scene;
-mod schedule;
-mod stage;
 mod system;
 mod type_info;
 
@@ -26,5 +21,3 @@ pub use batch::Batch;
 pub use component::Component;
 pub use macros::Component;
 pub use scene::Scene;
-pub use schedule::Schedule;
-pub use stage::Stage;
