@@ -20,12 +20,12 @@ impl Scene {
 
 impl Scene {
     #[must_use]
-    pub fn component<C: Component>(&self, actor: Actor) -> &C {
+    pub fn component<T: Component>(&self, actor: Actor) -> &T {
         self.get_component(actor).unwrap()
     }
 
     #[must_use]
-    pub fn component_mut<C: Component>(&mut self, actor: Actor) -> &mut C {
+    pub fn component_mut<T: Component>(&mut self, actor: Actor) -> &mut T {
         self.get_component_mut(actor).unwrap()
     }
 
@@ -74,31 +74,31 @@ impl Scene {
     }
 
     #[must_use]
-    pub fn get_component<C: Component>(&self, actor: Actor) -> Option<&C> {
+    pub fn get_component<T: Component>(&self, actor: Actor) -> Option<&T> {
         self.get_archetype_of(actor)?.get_component(actor)
     }
 
     #[must_use]
-    pub fn get_component_mut<C: Component>(&mut self, actor: Actor) -> Option<&mut C> {
+    pub fn get_component_mut<T: Component>(&mut self, actor: Actor) -> Option<&mut T> {
         self.get_archetype_mut_of(actor)?.get_component_mut(actor)
     }
 
     #[must_use]
-    pub fn get_resource<R: Resource>(&self) -> Option<&R> {
-        self.resources.get(&TypeId::of::<R>())?.downcast_ref::<R>()
+    pub fn get_resource<T: Resource>(&self) -> Option<&T> {
+        self.resources.get(&TypeId::of::<T>())?.downcast_ref::<T>()
     }
 
     #[must_use]
-    pub fn get_resource_mut<R: Resource>(&mut self) -> Option<&mut R> {
+    pub fn get_resource_mut<T: Resource>(&mut self) -> Option<&mut T> {
         self.resources
-            .get_mut(&TypeId::of::<R>())?
-            .downcast_mut::<R>()
+            .get_mut(&TypeId::of::<T>())?
+            .downcast_mut::<T>()
     }
 
-    pub fn insert_resource<R: Resource>(&mut self, res: R) -> Option<Box<R>> {
+    pub fn insert_resource<T: Resource>(&mut self, res: T) -> Option<Box<T>> {
         self.resources
             .insert(res.type_id(), Box::new(res))?
-            .downcast::<R>()
+            .downcast::<T>()
             .ok()
     }
 
@@ -107,20 +107,20 @@ impl Scene {
         Self::default()
     }
 
-    pub fn remove_resource<R: Resource>(&mut self) -> Option<Box<R>> {
+    pub fn remove_resource<T: Resource>(&mut self) -> Option<Box<T>> {
         self.resources
-            .remove(&TypeId::of::<R>())?
-            .downcast::<R>()
+            .remove(&TypeId::of::<T>())?
+            .downcast::<T>()
             .ok()
     }
 
     #[must_use]
-    pub fn resource<R: Resource>(&self) -> &R {
+    pub fn resource<T: Resource>(&self) -> &T {
         self.get_resource().unwrap()
     }
 
     #[must_use]
-    pub fn resource_mut<R: Resource>(&mut self) -> &mut R {
+    pub fn resource_mut<T: Resource>(&mut self) -> &mut T {
         self.get_resource_mut().unwrap()
     }
 }
