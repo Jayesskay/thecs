@@ -2,11 +2,11 @@
 pub struct Actor(usize);
 
 #[derive(Default)]
-pub struct Factory {
+pub struct ActorFactory {
     created: usize,
 }
 
-impl Factory {
+impl ActorFactory {
     #[must_use]
     pub fn create(&mut self) -> Actor {
         self.created += 1;

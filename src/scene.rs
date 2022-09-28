@@ -9,7 +9,7 @@ use std::{
 
 #[derive(Default)]
 pub struct Scene {
-    actor_factory: actor::Factory,
+    actor_factory: actor::ActorFactory,
     archetypes: Vec<Archetype>,
     resources: HashMap<TypeId, Box<dyn Any>>,
 }
