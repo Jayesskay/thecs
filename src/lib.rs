@@ -18,7 +18,6 @@ mod archetype;
 mod component;
 mod resource;
 mod scene;
-mod system;
 mod type_info;
 
 pub use actor::Actor;
